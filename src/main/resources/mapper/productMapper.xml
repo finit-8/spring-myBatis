@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.app.mybatis.mapper.ProductMapper">          <!--namespace는 여러 mapper들 중 어떤 mapper인지 구분하기 위한 구분점이고, 연결대상을 인터페이스로 하여 단위테스트시 추상된 걸 구체화한다.-->
+    <insert id="insert" parameterType="ProductVO">
+        INSERT INTO TBL_PRODUCT VALUES (SEQ_PRODUCT.NEXTVAL, #{productName}, #{productPrice}, #{productStock})
+    </insert>
+
+    <select id="select" parameterType="Long" resultType="ProductVO">
+        SELECT ID, PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_STOCK FROM TBL_PRODUCT WHERE ID = #{id}
+    </select>
+
+    <select id="selectAll" resultType="ProductVO">
+        SELECT ID, PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_STOCK FROM TBL_PRODUCT
+    </select>
+
+    <update id="update" parameterType="ProductVO">
+        UPDATE TBL_PRODUCT
+        SET PRODUCT_NAME = #{productName}, PRODUCT_PRICE = #{productPrice}, PRODUCT_STOCK = #{productStock}
+        WHERE ID = #{id}
+    </update>
+
+    <delete id="delete" parameterType="Long">
+        DELETE FROM TBL_PRODUCT WHERE ID = #{id}
+    </delete>
+
+
+
+
+</mapper>
