@@ -1,15 +1,68 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.app.mybatis.mapper.PostMapper">          <!--namespace는 여러 mapper들 중 어떤 mapper인지 구분하기 위한 구분점이고, 연결대상을 인터페이스로 하여 단위테스트시 추상된 걸 구체화한다.-->
-    <insert id="insert" parameterType="PostVO">
+    <insert id="insert" parameterType="PostDTO">
         INSERT INTO TBL_POST(ID, POST_TITLE, POST_CONTENT, POST_STATUS, MEMBER_ID)
         VALUES(SEQ_POST.NEXTVAL, #{postTitle}, #{postContent}, #{postStatus}, #{memberId})
     </insert>
 
-    <select id="selectAll" resultType="PostVO">
-        SELECT ID, POST_TITLE, POST_CONTENT, POST_READ_COUNT, POST_STATUS, MEMBER_ID
-        FROM TBL_POST
+    <select id="selectAll" resultType="PostDTO">
+        SELECT TBP.ID, TBP.POST_TITLE, TBP.POST_CONTENT, TBP.POST_READ_COUNT, TBP.POST_STATUS, TBP.MEMBER_ID,
+                TBM.MEMBER_EMAIL, TBM.MEMBER_NAME
+        FROM TBL_POST TBP
+        JOIN TBL_MEMBER TBM
+        ON TBP.MEMBER_ID = TBM.ID
     </select>
 
+    <select id="select" parameterType="Long" resultType="PostDTO">
+        SELECT TBP.ID, TBP.POST_TITLE, TBP.POST_CONTENT, TBP.POST_READ_COUNT, TBP.POST_STATUS, TBP.MEMBER_ID,
+                TBM.MEMBER_EMAIL, TBM.MEMBER_NAME
+        FROM TBL_POST TBP
+        JOIN TBL_MEMBER TBM
+        ON TBP.MEMBER_ID = TBM.ID AND TBP.ID = #{id}
+    </select>
 
+    <update id="update" parameterType="PostDTO">
+        UPDATE TBL_POST
+        SET POST_TITLE = #{postTitle}, POST_CONTENT = #{postContent}, POST_STATUS = #{postStatus}
+        WHERE ID = #{id}
+    </update>
+
+    <delete id="delete" parameterType="Long">
+        DELETE FROM TBL_POST WHERE ID = #{id}
+    </delete>
+
+    <update id="updateReadCount" parameterType="Long">
+        UPDATE TBL_POST
+        SET POST_READ_COUNT = POST_READ_COUNT + 1
+        WHERE ID = #{id}
+    </update>
+
+    <!-- 게시글 목록(정렬) - 동적 쿼리 -->
+    <select id="selectAllWithOrder" parameterType="String" resultType="PostDTO">
+        SELECT TBP.ID, TBP.POST_TITLE, TBP.POST_CONTENT, TBP.POST_READ_COUNT, TBP.POST_STATUS, TBP.MEMBER_ID,
+                TBM.MEMBER_EMAIL, TBM.MEMBER_NAME
+        FROM TBL_POST TBP
+        JOIN TBL_MEMBER TBM
+        ON TBP.MEMBER_ID = TBM.ID
+        ORDER BY
+        <choose>
+            <when test="order.equals('popular')">
+                POST_READ_COUNT DESC
+            </when><when test="order.equals('unpopular')">
+                POST_READ_COUNT
+            </when>
+            <otherwise>ID DESC</otherwise>
+        </choose>
+    </select>
+
+    <!-- 쿠팡 같이 게시글 무수히 많은 게시판에 게시글 띄우는 법 -->
+    <select id="selectAllWithParams" parameterType="Map" resultType="PostDTO">
+        SELECT TBP.ID, TBP.POST_TITLE, TBP.POST_CONTENT, TBP.POST_READ_COUNT, TBP.POST_STATUS, TBP.MEMBER_ID,
+                TBM.MEMBER_EMAIL, TBM.MEMBER_NAME
+        FROM TBL_POST TBP
+        JOIN TBL_MEMBER TBM
+        ON TBP.MEMBER_ID = TBM.ID
+        OFFSET (1 - 1) * 10 ROWS FETCH NEXT 10 ROW ONLY
+    </select>
 </mapper>
