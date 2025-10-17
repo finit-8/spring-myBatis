@@ -113,6 +113,7 @@ public class PostTests {
         for(int i = 0; i < 10000; i++) {
             Long id = Long.valueOf(random.nextLong(1, 50));
             postMapper.select(id).map(PostDTO::getId).ifPresent(postMapper::updateReadCount);
+            
         }
     }
 
